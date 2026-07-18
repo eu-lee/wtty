@@ -802,6 +802,12 @@ pub const Action = union(enum) {
     /// Show the worktree picker.
     worktree_picker,
 
+    /// Close the current worktree session.
+    close_worktree_session,
+
+    /// Remove the current worktree.
+    remove_worktree,
+
     /// Toggle the quick terminal.
     ///
     /// The quick terminal, also known as the "Quake-style" or drop-down
@@ -1413,6 +1419,8 @@ pub const Action = union(enum) {
             .toggle_command_palette,
             .toggle_worktree_sidebar,
             .worktree_picker,
+            .close_worktree_session,
+            .remove_worktree,
             .toggle_background_opacity,
             .show_on_screen_keyboard,
             .reset_window_size,
@@ -3352,6 +3360,28 @@ test "parse: action worktree_picker" {
         try parseSingle("a=worktree_picker"),
     );
     try testing.expectError(Error.InvalidFormat, parseSingle("a=worktree_picker:next"));
+}
+
+test "parse: action worktree actions" {
+    const testing = std.testing;
+
+    try testing.expectEqual(
+        Binding{
+            .trigger = .{ .key = .{ .unicode = 'a' } },
+            .action = .{ .close_worktree_session = {} },
+        },
+        try parseSingle("a=close_worktree_session"),
+    );
+    try testing.expectError(Error.InvalidFormat, parseSingle("a=close_worktree_session:next"));
+
+    try testing.expectEqual(
+        Binding{
+            .trigger = .{ .key = .{ .unicode = 'a' } },
+            .action = .{ .remove_worktree = {} },
+        },
+        try parseSingle("a=remove_worktree"),
+    );
+    try testing.expectError(Error.InvalidFormat, parseSingle("a=remove_worktree:next"));
 }
 
 test "parse: action with string" {
