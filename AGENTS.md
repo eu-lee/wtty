@@ -2,6 +2,21 @@
 
 A file for [guiding coding agents](https://agents.md/).
 
+## Git Remotes — IMPORTANT
+
+This repository is a private fork. All git and GitHub activity MUST stay on
+the fork, never the original upstream project:
+
+- **ONLY push to `eu-lee/ghostty`** (the `origin` remote). NEVER push to
+  `ghostty-org/ghostty`, `mitchellh/ghostty`, or any other remote.
+- Do not add an upstream remote. If one exists, do not push or fetch-and-PR
+  against it.
+- Open pull requests against `eu-lee/ghostty` only. `gh` on a fork can
+  default the PR base to the upstream repository — always pass
+  `--repo eu-lee/ghostty` to `gh pr create` (a `gh repo set-default
+  eu-lee/ghostty` is configured, but do not rely on it).
+- Never open issues, comments, or PRs on the upstream repository.
+
 ## Commands
 
 - **Build:** `zig build`
