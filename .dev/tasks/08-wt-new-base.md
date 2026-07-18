@@ -64,7 +64,5 @@ the UI so it's never a mystery. Flipping the default later should be a one-liner
 - Commit here on `feat/wt-new-base`; push to `origin` (**eu-lee/ghostty only** — see
   AGENTS.md). Open a PR with `gh pr create --repo eu-lee/ghostty --base
   feat/wt-new-flow-m4`. **Do not merge** — the human merges.
-- Commit messages end with `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`;
-  PR bodies end with `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
 - Heads-up: `09-wt-sidebar-keyboard` (sibling branch) also edits
   `WorktreeSidebarViewController.swift`; expect a small conflict at merge time.
