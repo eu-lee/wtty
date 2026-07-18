@@ -72,6 +72,10 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
     // and ptys) while another worktree is shown. Created on the first switch.
     var worktreeWorkspaces: WorktreeWorkspaceManager?
 
+    // worktree-sidebar: Watches attached surface state for sidebar status
+    // indicators such as bell.
+    var worktreeStatusCancellable: AnyCancellable?
+
     init(_ ghostty: Ghostty.App,
          withBaseConfig base: Ghostty.SurfaceConfiguration? = nil,
          withSurfaceTree tree: SplitTree<Ghostty.SurfaceView>? = nil,
@@ -1219,6 +1223,7 @@ class TerminalController: BaseTerminalController, TabGroupCloseCoordinator.Contr
         // and tear down detached workspaces so their surfaces (and ptys) are freed.
         worktreeWorkspaces?.removeAll()
         worktreeWorkspaces = nil
+        worktreeStatusCancellable = nil
         worktreeSidebarViewController = nil
         cancelPendingInitialPresentation()
         self.relabelTabs()

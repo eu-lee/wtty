@@ -104,6 +104,17 @@ struct WorktreeSidebarViewModelTests {
         #expect(viewModel.filteredWorktrees.count == 3)
     }
 
+    @Test func activeWorktreePathsUseCanonicalKeys() async {
+        let viewModel = WorktreeSidebarViewModel(model: repoModel())
+        await viewModel.refresh(cwd: URL(fileURLWithPath: "/repo/main"))
+        let feature = Worktree(path: URL(fileURLWithPath: "/repo/feature"), branch: "feature", isMain: false, isDetached: false)
+
+        viewModel.updateActiveWorktreePaths([URL(fileURLWithPath: "/repo/./feature/")])
+
+        #expect(viewModel.isActive(feature))
+        #expect(WorktreeSidebar.isActive(feature, in: viewModel.activeWorktreePaths))
+    }
+
     @Test func selectionPreservedAcrossRefreshWhenStillPresent() async {
         let viewModel = WorktreeSidebarViewModel(model: repoModel())
         await viewModel.refresh(cwd: URL(fileURLWithPath: "/repo/feature"))
@@ -156,6 +167,20 @@ struct WorktreeSidebarViewModelTests {
         #expect(WorktreeSidebar.filter(worktrees, query: "zzz").isEmpty)
     }
 
+    @Test func canRemoveRefusesMainOnly() {
+        let main = Worktree(path: URL(fileURLWithPath: "/w/main"), branch: "main", isMain: true, isDetached: false)
+        let feature = Worktree(path: URL(fileURLWithPath: "/w/feature"), branch: "feature", isMain: false, isDetached: false)
+
+        #expect(WorktreeSidebar.canRemove(main) == false)
+        #expect(WorktreeSidebar.canRemove(feature) == true)
+    }
+
+    @Test func forceRemovePredicateRecognizesDirtyWorktreeMessages() {
+        #expect(WorktreeSidebar.canForceRemove(afterGitMessage: "contains modified or untracked files, use --force to delete it"))
+        #expect(WorktreeSidebar.canForceRemove(afterGitMessage: "is dirty, use --force"))
+        #expect(WorktreeSidebar.canForceRemove(afterGitMessage: "invalid path") == false)
+    }
+
     @Test func activeFirstPreservesOrderWithinGroups() {
         let worktrees = [
             Worktree(path: URL(fileURLWithPath: "/repo/main"), branch: "main", isMain: true, isDetached: false),
@@ -170,6 +195,17 @@ struct WorktreeSidebarViewModelTests {
         #expect(WorktreeSidebar.activeFirst(worktrees, activeWorktreePaths: active).map(\.branch) == [
             "feature", "review", "main",
         ])
+    }
+
+    @Test func bellStatusUsesCanonicalKeys() async {
+        let viewModel = WorktreeSidebarViewModel(model: repoModel())
+        await viewModel.refresh(cwd: URL(fileURLWithPath: "/repo/main"))
+        let feature = Worktree(path: URL(fileURLWithPath: "/repo/feature"), branch: "feature", isMain: false, isDetached: false)
+
+        viewModel.updateBellWorktreePaths([URL(fileURLWithPath: "/repo/./feature/")])
+
+        #expect(viewModel.hasBell(feature))
+        #expect(WorktreeSidebar.hasBell(feature, in: viewModel.bellWorktreePaths))
     }
 
     @Test func resolveCwdPrefersPwdThenConfiguredDirectory() {
