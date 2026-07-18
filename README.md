@@ -42,49 +42,72 @@ For more details, see [About Ghostty](https://ghostty.org/docs/about).
 
 This fork adds a macOS-native **git worktree sidebar**: each window can list
 the worktrees of the repository its terminal is in and switch the entire
-window between per-worktree workspaces. A workspace is the window's whole
-split layout — switching swaps every pane at once, and the previous
-workspace's terminals keep running in the background (processes, scrollback,
-and layout all survive; switching back restores them exactly).
+window between per-worktree workspaces. The worktrees are resolved from the
+window's working directory. A workspace is the window's whole split layout —
+switching swaps every pane at once, and the previous workspace's terminals
+keep running in the background (processes, scrollback, and layout all survive;
+switching back restores them exactly).
 
-- **Toggle the sidebar** with `cmd+shift+e` (the default binding for the
-  `toggle_worktree_sidebar` keybind action) or View → Worktree Sidebar.
-- **Jump directly** with View → Go to Worktree… or bind the
-  `worktree_picker` keybind action. The picker searches all worktrees and
-  opens an inactive worktree only when you choose it, e.g. in your config:
+Inside the sidebar, worktrees that have a live session ("active") are grouped
+above the inactive ones. The worktree the window is currently switched to is
+marked with a leading `*`, and any worktree whose session has rung its bell
+shows a bell indicator on its row.
 
-  ```ini
-  keybind = cmd+alt+p=worktree_picker
-  ```
+### Keybinds
 
-- **Switch** by clicking a row, or bind the `goto_worktree:next` /
-  `goto_worktree:previous` keybind actions to cycle active worktrees only
-  (ones with live sessions, no default binding), e.g. in your config:
+All bindings below are macOS-only; the actions are no-ops elsewhere. Defaults
+are compiled into this fork's build (see `src/config/Config.zig`); the picker
+and cycle actions ship unbound so you can bind them yourself.
 
-  ```ini
-  keybind = cmd+alt+right_bracket=goto_worktree:next
-  keybind = cmd+alt+left_bracket=goto_worktree:previous
-  ```
+| Action | Default macOS bind | What it does |
+| --- | --- | --- |
+| `toggle_worktree_sidebar` | `cmd+shift+e` | Show or hide the worktree sidebar. |
+| `worktree_picker` | _(unbound)_ | Open the fuzzy worktree picker overlay. |
+| `goto_worktree:next` | _(unbound)_ | Switch to the next active worktree. |
+| `goto_worktree:previous` | _(unbound)_ | Switch to the previous active worktree. |
+| `new_worktree` | `cmd+opt+n` | Open the create-worktree popup. |
+| `close_worktree_session` | `cmd+opt+c` | Tear down the selected worktree's live session, leaving the worktree on disk. |
+| `remove_worktree` | `cmd+opt+backspace` | `git worktree remove` the selected worktree (branch left intact). |
 
-- **Create a worktree** with the "New worktree…" row: enter a branch name and
-  optional base ref. The base field defaults to the currently selected
-  worktree's branch; blank uses that visible default. Ghostty runs
-  `git worktree add ../<repo>-worktrees/<branch> -b <branch> <base>` when a
-  base is resolved, using a visible container directory next to the
-  repository, one subdirectory per branch (slashes in branch names become
-  dashes). The new worktree opens immediately; git errors show inline in the
-  sidebar, never as alerts.
-- **Close Session** from a row's context menu drops that worktree's live
-  workspace and returns the row to inactive. The worktree remains on disk, and
+To bind the unbound actions, add them to your Ghostty config, e.g.:
+
+```ini
+keybind = cmd+alt+p=worktree_picker
+keybind = cmd+alt+right_bracket=goto_worktree:next
+keybind = cmd+alt+left_bracket=goto_worktree:previous
+```
+
+### Using it
+
+- **Open the sidebar** with `cmd+shift+e` or View → Worktree Sidebar.
+- **Switch** by clicking a row, by cycling active worktrees with
+  `goto_worktree:next` / `goto_worktree:previous`, or by opening the
+  `worktree_picker` overlay (also reachable via View → Go to Worktree…). The
+  picker searches all worktrees and opens an inactive one only when you choose
+  it.
+- **Create a worktree** with `new_worktree` (`cmd+opt+n`), which opens a
+  centered search-style popup: type a branch name, optionally override the base
+  ref, and press Return. The base defaults to the currently selected worktree's
+  branch. The same flow is reachable via the inline "New worktree…" button at
+  the bottom of the sidebar. Ghostty runs
+  `git worktree add ../<repo>-worktrees/<branch> -b <branch> <base>`, using a
+  visible container directory next to the repository, one subdirectory per
+  branch (slashes in branch names become dashes). The new worktree opens
+  immediately; git errors show inline, never as alerts.
+- **Close a session** with `close_worktree_session` (`cmd+opt+c`) or a row's
+  right-click **Close Session** menu item. This drops the worktree's live
+  workspace and returns the row to inactive; the worktree remains on disk, and
   opening it again starts a fresh session.
-- **Remove Worktree…** from a row's context menu runs `git worktree remove` for
-  that checkout. The branch is left intact. If git refuses because the worktree
-  is dirty, the sidebar shows the error inline and offers **Force remove**.
-- The sidebar's collapsed state and width are remembered for the app session
-  (new windows inherit them); persisting across restarts is a non-goal for
-  v1, as are dirty/ahead-behind indicators. Creation and removal never delete
-  branches. The
-  feature is macOS-only; the keybind actions are no-ops elsewhere.
+- **Remove a worktree** with `remove_worktree` (`cmd+opt+backspace`) or a row's
+  right-click **Remove Worktree…** menu item, which runs `git worktree remove`
+  for that checkout. The branch is left intact. If git refuses because the
+  worktree is dirty, the sidebar shows the error inline and offers
+  **Force remove**. The keybind actions act on the sidebar's currently selected
+  worktree.
+
+The sidebar's collapsed state and width are remembered for the app session
+(new windows inherit them); persisting across restarts is a non-goal for v1, as
+are dirty/ahead-behind indicators. Creation and removal never delete branches.
 
 ## Download
 
