@@ -1,16 +1,11 @@
-<!-- LOGO -->
-<h1>
+<h1 align="center">Wtty</h1>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/fe853809-ba8b-400b-83ab-a9a0da25be8a" alt="Logo" width="128">
-  <br>Ghostty &mdash; worktree fork
-</h1>
-  <p align="center">
-    A personal fork of <a href="https://github.com/ghostty-org/ghostty">ghostty-org/ghostty</a>.
-    <br />
-    This README covers what the fork adds and how to build it. For upstream
-    Ghostty &mdash; downloads, documentation, and the full feature set &mdash;
-    see the <a href="https://ghostty.org">original project</a>.
-  </p>
+  A worktree-focused, macOS-native fork of
+  <a href="https://github.com/ghostty-org/ghostty">ghostty-org/ghostty</a>.
+  <br />
+  This README covers what the fork adds and how to build it. For upstream
+  Ghostty &mdash; downloads, documentation, and the full feature set &mdash;
+  see the <a href="https://ghostty.org">original project</a>.
 </p>
 
 ## What this fork adds
@@ -96,10 +91,10 @@ alone aren't enough for the macOS app).
 zig build
 ```
 
-Produces `macos/build/Debug/Ghostty.app`. Add `-Demit-macos-app=false` to skip
-the app bundle when you only need the core to compile. The debug app uses a
-separate bundle id (`com.mitchellh.ghostty.debug`), so it runs happily
-alongside a stable install.
+Produces `macos/build/Debug/Wtty.app`. Add `-Demit-macos-app=false` to skip the
+app bundle when you only need the core to compile. The debug app uses a separate
+bundle id (`com.eulee.wtty.debug`), so it runs happily alongside a stable
+install.
 
 ### A real build to install
 
@@ -110,22 +105,29 @@ no notarization or auto-update (the right trade-off for a personal fork):
 cd macos && ./build.nu --configuration ReleaseLocal
 ```
 
-Produces `macos/build/ReleaseLocal/Ghostty.app`; drag it into `/Applications`.
+Produces `macos/build/ReleaseLocal/Wtty.app`; drag it into `/Applications`.
 Because it isn't notarized, Gatekeeper will complain on first launch — either
 right-click → **Open** once, or clear the quarantine flag:
 
 ```sh
-xattr -dr com.apple.quarantine /Applications/Ghostty.app
+xattr -dr com.apple.quarantine /Applications/Wtty.app
 ```
 
-There's no auto-update, so re-run the build after you pull. The full,
-notarized `Release` pipeline (Developer ID signing + Sparkle appcast) is
-upstream's distribution path and needs an Apple Developer account — out of
-scope for this fork.
+There's no auto-update, so re-run the build after you pull. The full, notarized
+`Release` pipeline (Developer ID signing + Sparkle appcast) is upstream's
+distribution path and needs an Apple Developer account — out of scope for this
+fork.
+
+> **Note on identity.** Wtty ships under its own bundle id (`com.eulee.wtty`)
+> and name, but keeps the `ghostty` executable name so the CLI and config
+> (`~/.config/ghostty`) are unchanged. It has no icon of its own yet, so it uses
+> the system's generic app icon as a placeholder.
 
 ## Upstream
 
-Everything not described above is upstream Ghostty. It's a fast, native,
-feature-rich terminal emulator; for the full story, downloads, and
+Everything not described above is upstream Ghostty — a fast, native,
+feature-rich terminal emulator. For the full story, downloads, and
 documentation see [ghostty.org](https://ghostty.org) and
-[ghostty-org/ghostty](https://github.com/ghostty-org/ghostty).
+[ghostty-org/ghostty](https://github.com/ghostty-org/ghostty). Wtty is an
+independent personal fork and is not affiliated with or endorsed by the Ghostty
+project.
