@@ -2,11 +2,8 @@
 <p align="center">
   <img src="macos/Assets.xcassets/AppIcon.appiconset/icon_256.png" alt="Wtty" width="128">
 </p>
-<h1 align="center">Wtty</h1>
+<h1 align="center">Wtty - A worktree sidebar extension fork of Ghostty</h1>
 <p align="center">
-  A worktree-focused, macOS-native fork of
-  <a href="https://github.com/ghostty-org/ghostty">ghostty-org/ghostty</a>.
-  <br />
   This README covers what the fork adds and how to build it. For upstream
   Ghostty &mdash; downloads, documentation, and the full feature set &mdash;
   see the <a href="https://ghostty.org">original project</a>.
@@ -91,29 +88,7 @@ state and width are remembered for the app session (new windows inherit them);
 persisting across restarts, and dirty / ahead-behind indicators, are non-goals
 for v1. Creation and removal never delete branches.
 
-## Building & running
-
-Requires **Zig 0.15** and a full **Xcode** install (the Command Line Tools
-alone aren't enough for the macOS app).
-
-### Debug build (for hacking)
-
-```sh
-zig build
-```
-
-Produces `macos/build/Debug/Wtty.app`. Run the Swift tests with:
-
-```sh
-xcodebuild test -project macos/Ghostty.xcodeproj -scheme Ghostty \
-  -destination 'platform=macOS' -only-testing:GhosttyTests
-```
-
-Add `-Demit-macos-app=false` to `zig build` to skip the app bundle when you only
-need the core to compile. The debug app uses a separate bundle id
-(`com.eulee.wtty.debug`), so it runs happily alongside a stable install.
-
-### A real build to install
+### How to build
 
 Build optimized — this emits the **ReleaseLocal** configuration, which is
 ad-hoc code-signed with no notarization or auto-update (the right trade-off for
@@ -144,34 +119,6 @@ fork.
 > **Note on identity.** Wtty ships under its own bundle id (`com.eulee.wtty`),
 > name, and app icon, but keeps the `ghostty` executable name so the CLI and
 > config (`~/.config/ghostty`) are unchanged.
-
-### Replacing the app icon
-
-Upstream Ghostty has no static icon asset — it composites its Dock icon at
-runtime from layered images. Wtty disables that and ships a plain static icon
-instead:
-
-| What | Where |
-| --- | --- |
-| App icon (Dock, Finder) | `macos/Assets.xcassets/AppIcon.appiconset/` |
-| Flat image (About window, Settings) | `macos/Assets.xcassets/AppIconImage.imageset/` |
-
-To swap it, regenerate both from a single 1024×1024 PNG:
-
-```sh
-SRC=path/to/icon.png
-SET=macos/Assets.xcassets/AppIcon.appiconset
-for s in 16 32 64 128 256 512 1024; do
-  sips -z $s $s "$SRC" --out "$SET/icon_$s.png"
-done
-IMG=macos/Assets.xcassets/AppIconImage.imageset
-sips -z 256 256 "$SRC" --out "$IMG/macOS-AppIcon-256px-128pt@2x.png"
-sips -z 512 512 "$SRC" --out "$IMG/macOS-AppIcon-512px.png"
-cp "$SRC" "$IMG/macOS-AppIcon-1024px.png"
-```
-
-macOS renders macOS app icons as-authored (it doesn't apply its own mask), so
-draw the rounded corners and shadow into the artwork itself.
 
 ## Upstream
 
