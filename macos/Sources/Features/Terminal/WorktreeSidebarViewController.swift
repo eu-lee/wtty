@@ -292,7 +292,9 @@ private struct WorktreeSidebarList: View {
                         viewModel.select(worktree)
                     }
                     .contextMenu {
-                        if viewModel.isActive(worktree) {
+                        // Main is the permanent anchor — never offer to close
+                        // its session (the deactivation path no-ops on main too).
+                        if viewModel.isActive(worktree) && !worktree.isMain {
                             Button("Close Session") {
                                 viewModel.deactivate(worktree)
                             }

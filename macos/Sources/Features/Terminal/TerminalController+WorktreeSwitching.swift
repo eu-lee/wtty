@@ -215,38 +215,56 @@ extension TerminalController {
     @discardableResult
     private func deactivateWorktreeSession(_ worktree: Worktree) async -> Bool {
         guard let viewModel = worktreeSidebarViewController?.viewModel else { return false }
+
+        // Main is the permanent anchor — it's never closeable. Deactivating it
+        // is always a no-op, whether it's the session on screen or a background
+        // workspace, so the window can never be left without a home to fall
+        // back to. (The sidebar also withholds the Close Session affordance for
+        // main; this guards the programmatic path.)
+        guard !worktree.isMain else { return false }
+
         let manager = ensureWorktreeWorkspaces()
         let key = WorktreeWorkspaceManager.key(worktree.path)
         let activeKey = manager.activePath
             ?? viewModel.selectedWorktree.map { WorktreeWorkspaceManager.key($0.path) }
 
+        // Background session: this worktree has a detached workspace, so it's
+        // live but not the one on screen. Tear it down in place — the view
+        // stays on whatever is currently attached. This is how you close a
+        // session you aren't a part of.
         if let workspace = manager.workspace(for: key) {
             guard await confirmWorkspaceTeardownIfNeeded(workspace.tree) else { return false }
             manager.removeDetached(for: key)
-            syncActiveWorktreePaths()
+            syncWorktreeStatus()
             return true
         }
 
+        // No detached workspace, so if this worktree is live at all it's the
+        // one we're currently viewing (its tree is the attached surfaceTree).
         guard activeKey == key else {
-            syncActiveWorktreePaths()
+            syncWorktreeStatus()
             return false
         }
 
-        guard let fallback = deactivationFallback(for: worktree, activeKey: key, viewModel: viewModel) else {
-            syncActiveWorktreePaths()
+        // Closing the session on screen: fall back to main — always. Move there
+        // first so we're not standing on the tree we're about to destroy;
+        // switching detaches the closing session, making teardown identical to
+        // the background case above.
+        guard let main = viewModel.worktrees.first(where: \.isMain) else {
+            syncWorktreeStatus()
             return false
         }
 
         guard await confirmWorkspaceTeardownIfNeeded(surfaceTree) else { return false }
 
-        switchToWorktree(fallback)
+        switchToWorktree(main)
         guard manager.workspace(for: key) != nil else {
-            syncActiveWorktreePaths()
+            syncWorktreeStatus()
             return false
         }
 
         manager.removeDetached(for: key)
-        syncActiveWorktreePaths()
+        syncWorktreeStatus()
         return true
     }
 
@@ -268,21 +286,6 @@ extension TerminalController {
 
         await viewModel.removeWorktree(worktree)
         syncActiveWorktreePaths()
-    }
-
-    private func deactivationFallback(
-        for worktree: Worktree,
-        activeKey: URL,
-        viewModel: WorktreeSidebarViewModel
-    ) -> Worktree? {
-        if !worktree.isMain {
-            return viewModel.worktrees.first(where: \.isMain)
-        }
-
-        return viewModel.worktrees.first { candidate in
-            WorktreeWorkspaceManager.key(candidate.path) != activeKey &&
-                viewModel.isActive(candidate)
-        }
     }
 
     private func confirmWorkspaceTeardownIfNeeded(_ tree: SplitTree<Ghostty.SurfaceView>) async -> Bool {
